@@ -1,0 +1,19 @@
+// Ages in this file are specified in days.
+{
+  // In a rules file, max_age must be specified.
+  // The --max-age argument will be ignored when using a rules file.
+  "max_age": 90,
+
+  // domain_specific is also required.
+  // It could be an empty list (`[]`), but then why are you using a rules file?
+  "domain_specific": [
+    {
+      "domain": "nytimes.com",
+      "max_age": 60
+    },
+    {
+      "domain": "washingtonpost.com",
+      "max_age": 60
+    },
+  ]
+}

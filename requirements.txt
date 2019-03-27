@@ -1,0 +1,6 @@
+jsoncomment==0.4.2
+pyinstapaper==0.2.2
+python-dotenv==0.10.1
+
+# pyinstapaper:
+lxml==4.2.1
