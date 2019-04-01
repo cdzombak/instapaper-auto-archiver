@@ -80,6 +80,7 @@ def run_archive(ip_api, entries_limit, rules, dry_run):
         print('Archiving old entries...')
     now = dt.datetime.now(dt.timezone.utc)
     bookmarks = ip_api.get_bookmarks(folder='unread', limit=entries_limit)
+    count = 0
     for b in bookmarks:
         # entry_ts = dt.datetime.utcfromtimestamp(b.time).replace(tzinfo=dt.timezone.utc)
         entry_age = now - b.time.replace(tzinfo=dt.timezone.utc)
@@ -92,6 +93,9 @@ def run_archive(ip_api, entries_limit, rules, dry_run):
             print(b.url)
             if not dry_run:
                 b.archive()
+            count += 1
+    print('')
+    print('{:d} bookmarks affected.'.format(count))
 
 
 if __name__ == '__main__':
