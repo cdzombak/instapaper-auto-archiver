@@ -75,9 +75,9 @@ def list_domains(ip_api, entries_limit):
 
 def run_archive(ip_api, entries_limit, rules, dry_run):
     if dry_run:
-        print('Listing entries which would be archived...')
+        print('Listing bookmarks which would be archived...')
     else:
-        print('Archiving old entries...')
+        print('Archiving old bookmarks...')
     now = dt.datetime.now(dt.timezone.utc)
     bookmarks = ip_api.get_bookmarks(folder='unread', limit=entries_limit)
     count = 0
@@ -99,12 +99,12 @@ def run_archive(ip_api, entries_limit, rules, dry_run):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Archive old Instapaper entries.')
+    parser = argparse.ArgumentParser(description='Archive old, unread Instapaper bookmarks.')
     parser.add_argument('action', nargs='?', default='run', choices={'run', 'list-domains'})
-    parser.add_argument('--dry-run', type=str2bool, default='true', help='True to print what would be archived, then exit. False to archive old unread entries. Default: True.')
-    parser.add_argument('--entries-limit', type=int, default=250, help='Max number of entries to fetch via the Instapaper API. Default: 250. Max: 500.')
-    parser.add_argument('--max-age', type=int, default=90, help='Entries older than this many days will be marked as read. Ignored if using --rules-file. Default: 90.')
-    parser.add_argument('--only-domain', default=None, help='Operate on only entries from the given domain. Default: none.')
+    parser.add_argument('--dry-run', type=str2bool, default='true', help='True to print what would be archived, then exit. False to archive old unread bookmarks. Default: True.')
+    parser.add_argument('--entries-limit', type=int, default=250, help='Max number of bookmarks to fetch via the Instapaper API. Default: 250. Max: 500.')
+    parser.add_argument('--max-age', type=int, default=90, help='Bookmarks older than this many days will be marked as read. Ignored if using --rules-file. Default: 90.')
+    parser.add_argument('--only-domain', default=None, help='Operate on only bookmarks from the given domain. Default: none.')
     parser.add_argument('--rules-file', default=None, help='Extended rules JSON file. See rules.sample.json for an example.')
     args = parser.parse_args()
 
