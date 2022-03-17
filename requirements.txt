@@ -1,6 +1,3 @@
 jsoncomment==0.4.2
-git+git://github.com/cdzombak/pyinstapaper.git@ec71272d077b6545fec0539343fc2fc87d747f6e#egg=pyinstapaper
+git+git://github.com/cdzombak/pyinstapaper.git@b41dc62b71c7c512233faea54b11ada25d38d7de#egg=pyinstapaper
 python-dotenv==0.10.1
-
-# pyinstapaper:
-lxml==4.2.1
