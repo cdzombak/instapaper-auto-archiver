@@ -1,0 +1,21 @@
+# https://megalinter.io/configuration/
+---
+VALIDATE_ALL_CODEBASE: true
+FILTER_REGEX_EXCLUDE: rules\.sample\.json
+
+DISABLE:
+  - SPELL
+  - DOCKERFILE
+DISABLE_LINTERS:
+  - MAKEFILE_CHECKMAKE
+  - PYTHON_PYLINT
+  - PYTHON_PYRIGHT
+  - REPOSITORY_KICS
+  - REPOSITORY_TRIVY
+
+PLUGINS:
+  - https://raw.githubusercontent.com/cdzombak/mega-linter-plugin-dockerfilelint/main/mega-linter-plugin-dockerfilelint/dockerfilelint.megalinter-descriptor.yml
+
+SHOW_ELAPSED_TIME: false
+FILEIO_REPORTER: false
+PRINT_ALPACA: false
