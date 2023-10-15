@@ -5,8 +5,8 @@ import os
 import sys
 from urllib.parse import urlparse
 
+import commentjson
 from dotenv import load_dotenv
-from jsoncomment import JsonComment
 from pyinstapaper.instapaper import Instapaper
 
 load_dotenv()
@@ -178,7 +178,8 @@ if __name__ == "__main__":
     if args.action == "run":
         rules = Rules(args.max_age, only_domain=args.only_domain)
         if args.rules_file:
-            rules_dict = JsonComment().loadf(args.rules_file)
+            with open(args.rules_file, "r", encoding="utf-8") as f:
+                rules_dict = commentjson.load(f)
             try:
                 rules.add_rules(rules_dict)
             except Rules.SpecException as e:
