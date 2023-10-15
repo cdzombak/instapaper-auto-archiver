@@ -10,7 +10,7 @@ help: # via https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 
 .PHONY: virtualenv
 virtualenv: clean ## Set up local virtualenv with requirements
-	@virtualenv --python=python3 $(VIRTUALENV_DIR)
+	@virtualenv --python=python3.6 $(VIRTUALENV_DIR)
 	@( \
 		source ${VIRTUALENV_DIR}/bin/activate; \
 		pip3 install -r "requirements.txt"; \

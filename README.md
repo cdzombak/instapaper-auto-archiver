@@ -10,38 +10,109 @@ This is the Instapaper equivalent of my [Feedbin Auto-Archiver](https://github.c
 
 ## Requirements
 
-- Python 3 + [virtualenv](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv)
 - An [Instapaper](https://www.instapaper.com/) account
 - An [Instapaper API Token/Secret](https://www.instapaper.com/main/request_oauth_consumer_token)
 
-I know this works on macOS and Ubuntu; it should work pretty much anywhere Python 3 runs.
+**To run with Docker:** a working Docker installation is required.
 
-## Installation
+**To run with a local Python installation:** Python **3.6** is required. The newest available version of [pyinstapaper](https://pypi.org/project/pyinstapaper/), on which this script depends, requires a specific libxml version that does not build on newer Python versions. Additionally, pyinstapaper has [a bug](https://github.com/mdorn/pyinstapaper/pull/7) that prevents it from working with Python 3.5 or older.
 
-- Clone the repo
-- Run `make bootstrap` to create a virtualenv for the project & install dependencies
-- Copy `.env.sample` to `.env` and fill out your credentials
+Due to these compatibility issues, I recommend using this script under Docker; the provided Dockerfile builds a working image based on python3.6-alpine.
 
-### Crontab Example
+## Installation (Docker)
 
-This is how I’m running this tool on my personal server:
+Pre-built Docker images are available. [See Docker Hub for details](https://hub.docker.com/r/cdzombak/instapaper-auto-archiver).
 
+No installation is required to use these images under Docker.
+
+## Installation (local Python)
+
+1. Clone the repo and change into the `feedbin-auto-archiver` directory
+2. Run `make virtualenv` to create a virtualenv for the project & install dependencies
+
+## Configuration
+
+### Credentials
+
+Your Instapaper API token and secret are supplied via the environment variables `INSTAPAPER_API_ID` and `INSTAPAPER_API_SECRET`. [Get these here](https://www.instapaper.com/main/request_oauth_consumer_token).
+
+Credentials are supplied via the environment variables `INSTAPAPER_LOGIN` and `INSTAPAPER_PASSWORD`.
+
+#### Docker Configuration
+
+Credentials may be placed in a `.env` file and given to the `docker run` command like:
+
+```shell
+docker run --rm --env-file .env cdzombak/instapaper-auto-archiver:1 [OPTIONS]
 ```
-# Instapaper Archiver
-# Runs daily
-30   0   *   *   *   /home/cdzombak/scripts/instapaper-auto-archiver/venv/bin/python3 /home/cdzombak/scripts/instapaper-auto-archiver/instapaper_archiver.py --max-age 100 --entries-limit 100 --dry-run false
+
+(See `.env.sample` for a sample file.)
+
+Alternatively, credentials may be passed directly to the `docker run` command like:
+
+```shell
+docker run --rm \
+    -e INSTAPAPER_API_ID=my_instapaper_api_key \
+    -e INSTAPAPER_API_SECRET=my_instapaper_api_secret \
+    -e INSTAPAPER_LOGIN=me@example.com \
+    -e INSTAPAPER_PASSWORD=p@ssw0rd \
+    cdzombak/instapaper-auto-archiver:1 [OPTIONS]
 ```
 
-### Cleanup
+#### Local Python Configuration
 
-`make clean` will remove the virtualenv and cleanup any temporary artifacts (currently, there are none of those).
+Your credentials can be stored in a `.env` file alongside the `instapaper_archiver.py` script. The script will automatically read environment variables from that file. (See `.env.sample` for an example.)
+
+### Rules File
+
+The rules file is a JSON file specifying per-domain maximum unread bookmark ages. The file is allowed to contain comments, allowing for clarity & easier maintenance. See `rules.sample.json` for an example.
+
+The file must contain an object with two top-level keys: `max_age` and `domain_specific`.
+
+`max_age` is equivalent to the `--max-age` argument; any bookmarks older than that age will be marked as read, unless they’re from a domain for which you’ve created a custom rule.
+
+`domain_specific` is a list of objects, each of which have two keys, like this:
+
+```javascript
+"domain_specific": [
+    {
+        "domain": "nytimes.com",
+        "max_age": 30
+    }, // …
+]
+```
+
+Those domain-specific rules take precedence over `max_age`. This allows you to set a quicker expiration for certain sites, or set a longer expiration for sites that tend to have evergreen articles you really don’t want to miss.
+
+### “Ignore This Domain”
+
+To avoid the archiver marking anything as read for a given domain, specify `999999999` for the domain’s `max_age`. (That is roughly 2.7 million years.)
+
+This is the [maximum](https://docs.python.org/3/library/datetime.html#datetime.timedelta.max) number of days a Python `timedelta` object can represent.
 
 ## Usage
 
-- Activate the virtualenv: `. venv/bin/activate`
-- Run the script: `python instapaper_archiver.py [flags]`
+### Docker Usage
 
-At least some flags are needed to make the script do anything useful. Credential configuration is documented in “Configuration,” below.
+Invoke the script with `docker run`. To use a rules file, you will need to mount it into the container.
+
+```shell
+docker run --rm --env-file .env \
+    -v /path/to/my_rules.json:/rules.json \
+    cdzombak/instapaper-auto-archiver:1 \
+    --rules-file /rules.json [--dry-run false] [OPTIONS]
+```
+
+### Local Python Usage
+
+1. Activate the virtualenv: `. venv/bin/activate`
+2. Run the script: `python instapaper_archiver.py --rules-file /path/to/my_rules.json [--dry-run false] [OPTIONS]`
+
+Alternatively, invoke the virtualenv's Python interpreter directly:
+
+```shell
+venv/bin/python3.6 instapaper_archiver.py --rules-file /path/to/my_rules.json [--dry-run false] [OPTIONS]
+```
 
 ### Flags
 
@@ -89,42 +160,17 @@ Run `python instapaper_archiver.py list-domains` to print a list domains from wh
 
 The output is grep-able. For example, to find the NY Times website, try `python instapaper_archiver.py list-domains | grep -i "nytimes"`
 
-## Configuration
+(For Docker, run `docker run --rm --env-file .env cdzombak/instapaper-auto-archiver:1 list-domains`.)
 
-### Credentials
+### Crontab Example
 
-Your Instapaper API token and secret are supplied via the environment variables `INSTAPAPER_API_ID` and `INSTAPAPER_API_SECRET`.
+This is how I’m running this tool on my personal server:
 
-Credentials are supplied via the environment variables `INSTAPAPER_LOGIN` and `INSTAPAPER_PASSWORD`.
-
-Optionally, these can be stored in a `.env` file alongside the `instapaper_archiver` script. The script will automatically read environment variables from that file. (See `.env.sample` for an example.)
-
-### Rules File
-
-The rules file is a JSON file specifying per-domain maximum unread bookmark ages. The file is allowed to contain comments, allowing for clarity & easier maintenance. See `rules.sample.json` for an example.
-
-The file must contain an object with two top-level keys: `max_age` and `domain_specific`.
-
-`max_age` is equivalent to the `--max-age` argument; any bookmarks older than that age will be marked as read, unless they’re from a domain for which you’ve created a custom rule.
-
-`domain_specific` is a list of objects, each of which have two keys, like this:
-
-```javascript
-"domain_specific": [
-  {
-    "domain": "nytimes.com",
-    "max_age": 30
-  }, // …
-]
+```text
+# Instapaper Archiver
+# Runs daily at 1:30am
+30   1   *   *   *   docker run --rm --env-file $HOME/.config/instapaper/env cdzombak/instapaper-auto-archiver:1 --max-age 180 --entries-limit 100 --dry-run false
 ```
-
-Those domain-specific rules take precedence over `max_age`. This allows you to set a quicker expiration for certain sites, or set a longer expiration for sites that tend to have evergreen articles you really don’t want to miss.
-
-### “Ignore This Domain”
-
-To avoid the archiver marking anything as read for a given domain, specify `999999999` for the domain’s `max_age`. (That is roughly 2.7 million years.)
-
-This is the [maximum](https://docs.python.org/3/library/datetime.html#datetime.timedelta.max) number of days a Python `timedelta` object can represent.
 
 ## License
 
