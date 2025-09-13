@@ -2,3 +2,4 @@
 .env
 venv/
 rules.json
+__pycache__/
